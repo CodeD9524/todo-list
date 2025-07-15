@@ -1,12 +1,1 @@
-# React + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+So pretty much I just this is how react works. It combines HTML with JavaScript all in one and HTML is pretty much making the website and the script is making the buttons that work so what I did was I installed node the latest LTS and then I put in the stuff needed for react to run and I didn't click the Gove. I went to follow the link because that led me to the different webpage. Then I went to the react page with it's not JS it's JSX and then after that, I put the content in the function and then what react does is I pu, the link to react and that link will transfer all the content from the function to the react page which is the return so react it's pretty much HTML and JavaScript combined
