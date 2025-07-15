@@ -1,12 +1,2 @@
-# React + Vite
+What react is is pretty much a combination of HTML and JavaScript so JavaScript is JS dot JS to be specific and react is .JSX So I installed the latest node latest meaning LTS not current that was my mistake and I entered in the information needed to get the react to work and what react is doing is is putting in the HTML inside of a function and react is at the bottom of return so it returning the informati so in essence wrecked is kind of a sort of way of inputting information. I still need to put in the information in the function react is pretty much like a shortcut so you can put for example a code one single code and react and that single code will get the information from the function which is HTML and put it in your react if that makes sense
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
