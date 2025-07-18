@@ -11,7 +11,7 @@ function App() {
 
   return (
 <div>
-      <h1>My Todo's</h1>
+      <h1>My Todo's outro</h1>
       <TodoForm />
       <TodoList todos={todos} / >
       <ul>
