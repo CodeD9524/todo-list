@@ -1,26 +1,25 @@
-import React from 'react';
+// App.js
+import React, { useState } from 'react';
 import TodoForm from './TodoForm';
 import TodoList from './TodoList';
 
 function App() {
-  const todos = [
-    {id: 1, title: "review resources"},
-    {id: 2, title: "take notes"},
-    {id: 3, title: "code out app"},
-]
+  const [todoList, setTodoList] = useState([]);
+
+  const addTodo = (newTodoTitle) => {
+    setTodoList((prevTodoList) => [
+      ...prevTodoList,
+      { id: Date.now(), title: newTodoTitle }
+    ]);
+  };
 
   return (
-<div>
-      <h1>My Todo's</h1>
-      <TodoForm />
-      <TodoList todos={todos} / >
-      <ul>
-            {todos.map(todo => <li key={todo.id}>{todo.title}</li>)}
-
-        </ul>
-            </div>
-            
-  )
+    <div>
+      <h1>My Todo App</h1>
+      <TodoForm onAddTodo={addTodo} />
+      <TodoList todoList={todoList} /> 
+    </div>
+  );
 }
 
-export default App
+export default App;
