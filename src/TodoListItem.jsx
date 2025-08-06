@@ -1,10 +1,19 @@
+// TodoListItem.js
 import React from 'react';
-const TodoListItem = ({ todo }) => {
+
+function TodoListItem({ todo, onCompleteTodo }) {
   return (
     <li>
-      {todo.title}
+      <input
+        type="checkbox"
+        checked={todo.isCompleted}
+        onChange={() => onCompleteTodo(todo.id)}
+      />
+      <form>
+        {todo.title}
+      </form>
     </li>
   );
-};
-export default TodoListItem;
+}
 
+export default TodoListItem;

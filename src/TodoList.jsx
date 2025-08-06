@@ -1,11 +1,14 @@
-import React from "react";
-import TodoListItem from "./TodoListItem";
+// TodoList.js
+import React from 'react';
+import TodoListItem from './TodoListItem';
 
-function TodoList({ todoList }) {
+function TodoList({ todoList, onCompleteTodo }) {
+  const filteredTodoList = todoList.filter((todo) => !todo.isCompleted);
+
   return (
     <ul>
-      {todoList.map((todo) => (
-        <TodoListItem key={todo.id} todo={todo} />
+      {filteredTodoList.map((todo) => (
+        <TodoListItem key={todo.id} todo={todo} onCompleteTodo={onCompleteTodo} />
       ))}
     </ul>
   );
