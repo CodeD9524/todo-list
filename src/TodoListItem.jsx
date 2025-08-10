@@ -4,12 +4,12 @@ import React from 'react';
 function TodoListItem({ todo, onCompleteTodo }) {
   return (
     <li>
-      <input
-        type="checkbox"
-        checked={todo.isCompleted}
-        onChange={() => onCompleteTodo(todo.id)}
-      />
       <form>
+        <input
+          type="checkbox"
+          checked={todo.isCompleted}
+          onChange={() => onCompleteTodo(todo.id)}
+        />
         {todo.title}
       </form>
     </li>
