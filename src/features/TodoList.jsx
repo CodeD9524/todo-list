@@ -1,20 +1,27 @@
+
 import React from 'react';
 import TodoListItem from './TodoListItem';
 
-function TodoList({ todoList, onCompleteTodo, onUpdateTodo }) { 
-  const filteredTodoList = todoList.filter((todo) => !todo.isCompleted);
-
+function TodoList({ todoList, onCompleteTodo, onUpdateTodo, isLoading }) {
   return (
     <>
-      {filteredTodoList.length === 0 ? (
-        <p>Add todo above to get started</p>
+      {isLoading ? (
+        <p>Todo list loading...</p>
       ) : (
-        <ul>
-          {filteredTodoList.map((todo) => (
-            <TodoListItem key={todo.id} todo={todo} onCompleteTodo={onCompleteTodo} 
-            onUpdateTodo={onUpdateTodo} />
-          ))}
-        </ul>
+        todoList.length > 0 ? (
+          <ul>
+            {todoList.map((todo) => (
+              <TodoListItem
+                key={todo.id}
+                todo={todo}
+                onCompleteTodo={onCompleteTodo}
+                onUpdateTodo={onUpdateTodo}
+              />
+            ))}
+          </ul>
+        ) : (
+          <p>No todos found. Add a new todo!</p>
+        )
       )}
     </>
   );
