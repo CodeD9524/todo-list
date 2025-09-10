@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import TodoForm from './features/TodoForm';
 import TodoList from './features/TodoList';
 import TodosViewForm from './features/TodosViewForm';
-
+import styles from "./Apps.module.css";
 function App() {
   const [todoList, setTodoList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -225,41 +226,42 @@ function App() {
   };
 
   return (
-    <div>
-     <h1>My Todo App</h1>
-     {isLoading || isUpdating ? (
-       <p>Loading...</p>
-     ) : errorMessage ? (
-       <p style={{ color: 'red' }}>{errorMessage}</p>
-     ) : (
-       <>
-         <TodoForm onAddTodo={addTodo} isSaving={isSaving} />
-         <TodoList
-           todoList={todoList}
-           onCompleteTodo={completeTodo}
-           onUpdateTodo={updateTodo}
-           isLoading={isLoading || isUpdating}
-         />
-         <hr />
-         <TodosViewForm
-           sortField={sortField}
-           setSortField={setSortField}
-           sortDirection={sortDirection}
-           setSortDirection={setSortDirection}
-           queryString={queryString}
-           setQueryString={setQueryString}
-         />
-         {errorMessage && (
-           <div>
-             <hr/>
-             <p style={{ color: 'red' }}>{errorMessage}</p>
-             <button onClick={() => setErrorMessage("")}>Dismiss</button>
-           </div>
-         )}
-       </>
-     )}
+    <div className={styles.appContainer}>
+      <h1>My Todo App</h1>
+      {isLoading || isUpdating ? (
+        <p>Loading...</p>
+      ) : errorMessage ? (
+        <p className={styles.errorMessage}>{errorMessage}</p>
+      ) : (
+        <>
+          <TodoForm onAddTodo={addTodo} isSaving={isSaving} />
+          <TodoList
+            todoList={todoList}
+            onCompleteTodo={completeTodo}
+            onUpdateTodo={updateTodo}
+            isLoading={isLoading || isUpdating}
+          />
+          <hr />
+          <TodosViewForm
+            sortField={sortField}
+            setSortField={setSortField}
+            sortDirection={sortDirection}
+            setSortDirection={setSortDirection}
+            queryString={queryString}
+            setQueryString={setQueryString}
+          />
+          {errorMessage && (
+            <div>
+              <hr />
+              <p className={styles.errorMessage}>{errorMessage}</p>
+              <button onClick={() => setErrorMessage('')}>Dismiss</button>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
+  
 }
 
 export default App;
