@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import TextInputWithLabel from '../shared/TextInputWithLabel';
+import styles from './TodoListItem.module.css'; // Import the CSS module
 
 function TodoListItem({ todo, onCompleteTodo, onUpdateTodo }) {
   const [isEditing, setIsEditing] = useState(false);
