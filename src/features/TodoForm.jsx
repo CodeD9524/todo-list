@@ -31,9 +31,8 @@ const StyledButton = styled.button`
 `;
 
 const TodoForm = ({ onAddTodo, isSaving }) => {
-  const = useState('');
-
-  const handleAddTodo = (event) => {
+  const [workingTodoTitle, setWorkingTodoTitle] = useState('') 
+   const handleAddTodo = (event) => {
     event.preventDefault();
 
     onAddTodo(workingTodoTitle);

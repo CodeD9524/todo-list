@@ -36,19 +36,23 @@ const StyledDirectionSelect = styled.select`
   border: 1px solid #ccc;
   border-radius: 4px;
 `;
-
-const TodosViewForm = ({ sortField, setSortField, sortDirection, setSortDirection, queryString, setQueryString }) => {
-  const = useState(queryString);
-
-  useEffect(() => {
+function TodosViewForm({
+    sortDirection,
+    setSortDirection,
+    sortField,
+    setSortField,
+    queryString,
+    setQueryString,
+}) {
+  const [localQueryString, setLocalQueryString] = useState(queryString);
+    useEffect(() => {
     const debounce = setTimeout(() => {
       setQueryString(localQueryString);
     }, 500);
 
-    return () => {
-      clearTimeout(debounce);
-    };
-  },);
+    return () => clearTimeout(debounce);
+  }, [localQueryString, setQueryString]);
+   
 
   return (
     <>
@@ -89,5 +93,6 @@ const TodosViewForm = ({ sortField, setSortField, sortDirection, setSortDirectio
     </>
   );
 };
+
 
 export default TodosViewForm;
