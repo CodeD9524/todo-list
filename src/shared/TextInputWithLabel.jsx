@@ -1,4 +1,11 @@
 import React from 'react'; 
+import styled from 'styled-components'; 
+const StyledInput = styled.input`
+  padding: 0.5em; /* Small amount of padding */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 0.5em; 
+`;
 
 function TextInputWithLabel({
   elementId,
@@ -10,7 +17,7 @@ function TextInputWithLabel({
   return (
     <>
       <label htmlFor={elementId}>{label}</label>
-      <input
+      <StyledInput 
         type="text"
         id={elementId}
         ref={ref}

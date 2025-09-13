@@ -1,19 +1,9 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useCallback } from 'react';
 import TodoForm from './features/TodoForm';
 import TodoList from './features/TodoList';
 import TodosViewForm from './features/TodosViewForm';
-
-const encodeUrl = ({ sortField, sortDirection, queryString }) => {
-  let sortQuery = `sort[0][field]=${sortField}&sort[0][direction]=${sortDirection}`;
-  let searchQuery = ""; // Updatable variable for search query
-
-  if (queryString) {
-    searchQuery = `&filterByFormula=SEARCH("${queryString}",+title)`;
-  }
-
-  return `${sortQuery}${searchQuery}`;
-};
-
+import styles from "./Apps.module.css";
 function App() {
   const [todoList, setTodoList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,49 +19,57 @@ function App() {
 
   const token = `Bearer ${import.meta.env.VITE_PAT}`;
 
+  const encodeUrl = useCallback(() => {
+    let sortQuery = `sort[0][field]=${sortField}&sort[0][direction]=${sortDirection}`;
+    let searchQuery = "";
+  
+    if (queryString) {
+      searchQuery = `&filterByFormula=SEARCH("${queryString}",+title)`;
+    }
+  
+    return `${sortQuery}${searchQuery}`;
+  }, [sortField, sortDirection, queryString]);
+  
   useEffect(() => {
     const fetchTodos = async () => {
       setIsLoading(true);
-
-      // Updated encodeUrl call to include queryString
-      const fetchUrl = `${baseUrl}?${encodeUrl({ sortField, sortDirection, queryString })}`;
+  
+      const fetchUrl = `${baseUrl}?${encodeUrl()}`;
       const options = {
         method: "GET",
         headers: {
-          "Authorization": token,
+          Authorization: token,
         },
       };
-
+  
       try {
         const resp = await fetch(fetchUrl, options);
-
+  
         if (!resp.ok) {
           const errorData = await resp.json();
           throw new Error(`Error: ${resp.status} ${errorData.error.message}`);
         }
-
+  
         const data = await resp.json();
-        console.log("data ===> ", data);
-
-        const transformedData = data.records.map((record) => {
-          const todo = {};
-          todo.id = record.id;
-          todo.title = record.fields.title || '';
-          todo.isCompleted = record.fields.isCompleted ? record.fields.isCompleted : false;
-          return todo;
-        });
-        console.log("transformedData ===> ", transformedData);
-
+  
+        const transformedData = data.records.map((record) => ({
+          id: record.id,
+          title: record.fields.title || '',
+          isCompleted: record.fields.isCompleted || false,
+        }));
+  
         setTodoList(transformedData);
+        setErrorMessage("");
       } catch (error) {
         setErrorMessage(`Failed to fetch todos: ${error.message}`);
       } finally {
         setIsLoading(false);
       }
     };
-
+  
     fetchTodos();
-  }, [sortField, sortDirection, queryString]); // Updated dependency array to include queryString
+  }, [encodeUrl]);
+  
 
   const addTodo = async (newTodoTitle) => {
     setIsSaving(true);
@@ -228,41 +226,42 @@ function App() {
   };
 
   return (
-    <div>
-     <h1>My Todo App</h1>
-     {isLoading || isUpdating ? (
-       <p>Loading...</p>
-     ) : errorMessage ? (
-       <p style={{ color: 'red' }}>{errorMessage}</p>
-     ) : (
-       <>
-         <TodoForm onAddTodo={addTodo} isSaving={isSaving} />
-         <TodoList
-           todoList={todoList}
-           onCompleteTodo={completeTodo}
-           onUpdateTodo={updateTodo}
-           isLoading={isLoading || isUpdating}
-         />
-         <hr />
-         <TodosViewForm
-           sortField={sortField}
-           setSortField={setSortField}
-           sortDirection={sortDirection}
-           setSortDirection={setSortDirection}
-           queryString={queryString}
-           setQueryString={setQueryString}
-         />
-         {errorMessage && (
-           <div>
-             <hr/>
-             <p style={{ color: 'red' }}>{errorMessage}</p>
-             <button onClick={() => setErrorMessage("")}>Dismiss</button>
-           </div>
-         )}
-       </>
-     )}
+    <div className={styles.appContainer}>
+      <h1>My Todo App</h1>
+      {isLoading || isUpdating ? (
+        <p>Loading...</p>
+      ) : errorMessage ? (
+        <p className={styles.errorMessage}>{errorMessage}</p>
+      ) : (
+        <>
+          <TodoForm onAddTodo={addTodo} isSaving={isSaving} />
+          <TodoList
+            todoList={todoList}
+            onCompleteTodo={completeTodo}
+            onUpdateTodo={updateTodo}
+            isLoading={isLoading || isUpdating}
+          />
+          <hr />
+          <TodosViewForm
+            sortField={sortField}
+            setSortField={setSortField}
+            sortDirection={sortDirection}
+            setSortDirection={setSortDirection}
+            queryString={queryString}
+            setQueryString={setQueryString}
+          />
+          {errorMessage && (
+            <div>
+              <hr />
+              <p className={styles.errorMessage}>{errorMessage}</p>
+              <button onClick={() => setErrorMessage('')}>Dismiss</button>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
+  
 }
 
 export default App;

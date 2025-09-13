@@ -1,0 +1,18 @@
+.appContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+    box-sizing: border-box;
+  }
+  
+  .errorMessage {
+    border: 1px solid red;
+    padding: 10px;
+    margin-top: 1rem;
+    background-color: #ffebeb;
+    color: #c00;
+    border-radius: 4px;
+  }
+  
