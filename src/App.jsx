@@ -1,39 +1,47 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useReducer } from 'react';
 import TodoForm from './features/TodoForm';
 import TodoList from './features/TodoList';
 import TodosViewForm from './features/TodosViewForm';
 import styles from "./Apps.module.css";
+import {
+  reducer as todosReducer,
+  actions as todoActions,
+  initialState as initialTodosState,
+} from './features/reducers/todo.reducer';
+
 function App() {
-  const [todoList, setTodoList] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [todoState, dispatch] = useReducer(todosReducer, initialTodosState);
+
+  const {
+    todoList,
+    isLoading,
+    isSaving,
+    isUpdating,
+    errorMessage
+  } = todoState;
 
   const [sortField, setSortField] = useState("createdTime");
   const [sortDirection, setSortDirection] = useState("desc");
-  const [queryString, setQueryString] = useState(""); // New state for queryString with empty string initial value
+  const [queryString, setQueryString] = useState("");
 
   const baseUrl = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
-
   const token = `Bearer ${import.meta.env.VITE_PAT}`;
 
   const encodeUrl = useCallback(() => {
     let sortQuery = `sort[0][field]=${sortField}&sort[0][direction]=${sortDirection}`;
     let searchQuery = "";
-  
+
     if (queryString) {
       searchQuery = `&filterByFormula=SEARCH("${queryString}",+title)`;
     }
-  
+
     return `${sortQuery}${searchQuery}`;
   }, [sortField, sortDirection, queryString]);
-  
+
   useEffect(() => {
     const fetchTodos = async () => {
-      setIsLoading(true);
-  
+      dispatch({ type: todoActions.fetchTodos });
+
       const fetchUrl = `${baseUrl}?${encodeUrl()}`;
       const options = {
         method: "GET",
@@ -41,38 +49,36 @@ function App() {
           Authorization: token,
         },
       };
-  
+
       try {
         const resp = await fetch(fetchUrl, options);
-  
+
         if (!resp.ok) {
           const errorData = await resp.json();
           throw new Error(`Error: ${resp.status} ${errorData.error.message}`);
         }
-  
+
         const data = await resp.json();
-  
+
         const transformedData = data.records.map((record) => ({
           id: record.id,
           title: record.fields.title || '',
           isCompleted: record.fields.isCompleted || false,
         }));
-  
-        setTodoList(transformedData);
-        setErrorMessage("");
+
+        dispatch({ type: todoActions.loadTodos, records: transformedData });
       } catch (error) {
-        setErrorMessage(`Failed to fetch todos: ${error.message}`);
+        dispatch({ type: todoActions.setLoadError, error });
       } finally {
-        setIsLoading(false);
+        dispatch({ type: todoActions.endRequest });
       }
     };
-  
+
     fetchTodos();
-  }, [encodeUrl]);
-  
+  }, [encodeUrl, baseUrl, token]);
 
   const addTodo = async (newTodoTitle) => {
-    setIsSaving(true);
+    dispatch({ type: todoActions.startRequest });
 
     try {
       const payload = {
@@ -89,7 +95,7 @@ function App() {
       const options = {
         method: "POST",
         headers: {
-          "Authorization": token,
+          Authorization: token,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
@@ -104,33 +110,19 @@ function App() {
 
       const { records } = await resp.json();
 
-      const savedTodo = {
-        id: records[0].id,
-        ...records[0].fields,
-      };
-
-      if (!records[0].fields.isCompleted) {
-        savedTodo.isCompleted = false;
-      }
-
-      setTodoList((prevTodoList) => [...prevTodoList, savedTodo]);
-      setErrorMessage("");
-
+      dispatch({ type: todoActions.addTodo, record: records[0] });
     } catch (error) {
-      console.error("Failed to add todo:", error);
-      setErrorMessage(`Failed to add todo: ${error.message}`);
+      dispatch({ type: todoActions.setLoadError, error });
     } finally {
-      setIsSaving(false);
+      dispatch({ type: todoActions.endRequest });
     }
   };
 
   const completeTodo = async (id) => {
-    setIsUpdating(true);
     const originalTodo = todoList.find((todo) => todo.id === id);
+    if (!originalTodo) return;
 
-    setTodoList((prevTodoList) =>
-      prevTodoList.map((todo) => (todo.id === id ? { ...todo, isCompleted: !todo.isCompleted } : todo))
-    );
+    dispatch({ type: todoActions.completeTodo, id });
 
     const updatedTodo = { ...originalTodo, isCompleted: !originalTodo.isCompleted };
 
@@ -150,35 +142,30 @@ function App() {
       const options = {
         method: "PATCH",
         headers: {
-          "Authorization": token,
+          Authorization: token,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       };
 
-      const resp = await fetch(baseUrl, options);
+      const resp = await fetch(`${baseUrl}/${updatedTodo.id}`, options);
 
       if (!resp.ok) {
         const errorData = await resp.json();
         throw new Error(`Error: ${resp.status} ${errorData.error.message}`);
       }
-      setErrorMessage("");
+
+      dispatch({ type: todoActions.clearError });
     } catch (error) {
-      console.error("Failed to complete/uncomplete todo:", error);
-      setErrorMessage(`${error.message}. Reverting completion status...`);
-      if (originalTodo) {
-        setTodoList((prevTodoList) =>
-          prevTodoList.map((todo) => (todo.id === originalTodo.id ? originalTodo : todo))
-        );
-      }
-    } finally {
-      setIsUpdating(false);
+      dispatch({ type: todoActions.revertTodo, editedTodo: originalTodo, error });
     }
   };
 
   const updateTodo = async (editedTodo) => {
-    setIsUpdating(true);
     const originalTodo = todoList.find((todo) => todo.id === editedTodo.id);
+    if (!originalTodo) return;
+
+    dispatch({ type: todoActions.updateTodo, editedTodo });
 
     try {
       const payload = {
@@ -196,39 +183,29 @@ function App() {
       const options = {
         method: "PATCH",
         headers: {
-          "Authorization": token,
+          Authorization: token,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       };
-      setTodoList((prevTodoList) =>
-        prevTodoList.map((todo) => (todo.id === editedTodo.id ? editedTodo : todo))
-      );
 
-      const resp = await fetch(baseUrl, options);
+      const resp = await fetch(`${baseUrl}/${editedTodo.id}`, options);
 
       if (!resp.ok) {
         const errorData = await resp.json();
         throw new Error(`Error: ${resp.status} ${errorData.error.message}`);
       }
-      setErrorMessage("");
+
+      dispatch({ type: todoActions.clearError });
     } catch (error) {
-      console.error("Failed to update todo:", error);
-      setErrorMessage(`${error.message}. Reverting todo...`);
-      if (originalTodo) {
-        setTodoList((prevTodoList) =>
-          prevTodoList.map((todo) => (todo.id === originalTodo.id ? originalTodo : todo))
-        );
-      }
-    } finally {
-      setIsUpdating(false);
+      dispatch({ type: todoActions.revertTodo, editedTodo: originalTodo, error });
     }
   };
 
   return (
     <div className={styles.appContainer}>
       <h1>My Todo App</h1>
-      {isLoading || isUpdating ? (
+      {(isLoading || isUpdating) ? (
         <p>Loading...</p>
       ) : errorMessage ? (
         <p className={styles.errorMessage}>{errorMessage}</p>
@@ -254,14 +231,13 @@ function App() {
             <div>
               <hr />
               <p className={styles.errorMessage}>{errorMessage}</p>
-              <button onClick={() => setErrorMessage('')}>Dismiss</button>
+              <button onClick={() => dispatch({ type: todoActions.clearError })}>Dismiss</button>
             </div>
           )}
         </>
       )}
     </div>
   );
-  
 }
 
 export default App;
