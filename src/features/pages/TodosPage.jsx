@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useCallback, useReducer } from 'react';
-import TodoForm from './TodoForm';
-import TodoList from './TodoList';
-import TodosViewForm from './TodosViewForm';
-import styles from "../Apps.module.css";
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import TodoForm from '../TodoForm.jsx';
+import TodoList from '../TodoList.jsx';
+import TodosViewForm from '../TodosViewForm.jsx';
+import styles from "../../Apps.module.css";
 import {
   reducer as todosReducer,
   actions as todoActions,
   initialState as initialTodosState,
-} from './reducers/todo.reducer';
+} from '../reducers/todo.reducer.jsx';
 
 function TodosPage() {
   const [todoState, dispatch] = useReducer(todosReducer, initialTodosState);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const {
     todoList,
@@ -20,19 +23,74 @@ function TodosPage() {
     errorMessage
   } = todoState;
 
-  const [sortField, setSortField] = useState("createdTime");
-  const [sortDirection, setSortDirection] = useState("desc");
-  const [queryString, setQueryString] = useState("");
+  const initialSortField = searchParams.get('sortField') || "createdTime";
+  const initialSortDirection = searchParams.get('sortDirection') || "desc";
+  const initialQueryString = searchParams.get('query') || "";
+
+  const [sortField, setSortField] = useState(initialSortField);
+  const [sortDirection, setSortDirection] = useState(initialSortDirection);
+  const [queryString, setQueryString] = useState(initialQueryString);
+
+  const itemsPerPage = 15;
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
+
+  const totalPages = Math.ceil(todoList.length / itemsPerPage);
 
   const baseUrl = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
   const token = `Bearer ${import.meta.env.VITE_PAT}`;
+  const handlePreviousPage = () => {
+    const newPage = Math.max(1, currentPage - 1);
+    const currentParams = Object.fromEntries([...searchParams]);
+    setSearchParams({ ...currentParams, page: newPage.toString() });
+  };
+  const handleNextPage = () => {
+    const newPage = Math.min(totalPages, currentPage + 1);
+    const currentParams = Object.fromEntries([...searchParams]);
+    setSearchParams({ ...currentParams, page: newPage.toString() });
+  };
+  useEffect(() => {
+    if (todoList.length === 0 && !isLoading) {
+    
+      if (currentPage !== 1) {
+        navigate("/");
+      }
+      return;
+    }
+
+    if (totalPages > 0) {
+      const isPageValid = !isNaN(currentPage) && currentPage >= 1 && currentPage <= totalPages;
+
+      if (!isPageValid) {
+        navigate("/");
+      }
+    }
+  }, [currentPage, totalPages, navigate, todoList.length, isLoading]); 
+
+  useEffect(() => {
+    const newSearchParams = {};
+    if (sortField !== "createdTime") {
+      newSearchParams.sortField = sortField;
+    }
+    if (sortDirection !== "desc") {
+      newSearchParams.sortDirection = sortDirection;
+    }
+    if (queryString) {
+      newSearchParams.query = queryString;
+    }
+    if (currentPage > 1) {
+      newSearchParams.page = currentPage.toString();
+    } else {
+      delete newSearchParams.page;
+    }
+    setSearchParams(newSearchParams);
+  }, [sortField, sortDirection, queryString, currentPage, setSearchParams]);
 
   const encodeUrl = useCallback(() => {
     let sortQuery = `sort[0][field]=${sortField}&sort[0][direction]=${sortDirection}`;
     let searchQuery = "";
 
     if (queryString) {
-      searchQuery = `&filterByFormula=SEARCH("${queryString}",+title)`;
+      searchQuery = `&filterByFormula=SEARCH("${encodeURIComponent(queryString)}",+title)`;
     }
 
     return `${sortQuery}${searchQuery}`;
@@ -218,6 +276,11 @@ function TodosPage() {
             onUpdateTodo={updateTodo}
             isLoading={isLoading || isUpdating}
           />
+          <div className="paginationControls">
+            <button onClick={handlePreviousPage} disabled={currentPage === 1}>Previous</button>
+            <span>Page {currentPage} of {totalPages}</span>
+            <button onClick={handleNextPage} disabled={currentPage >= totalPages}>Next</button>
+          </div>
           <hr />
           <TodosViewForm
             sortField={sortField}
